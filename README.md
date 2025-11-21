@@ -8,7 +8,7 @@ In this project, your team will design and develop a basic social networking app
 
 --- 
 
-# Requirements
+# Use Cases
 - Front-End: Implemented in Java (or Python), providing an interactive interface for users to explore the social network. The console interface is sufficient.
 - Back-End: Built using Neo4j, a graph database optimized for relationship-heavy data.
 - Data Source and Size: The application should utilize a public dataset (e.g., datasets from SNAP, Kaggle, or other open data repositories) to populate the social network. - The required dataset size is at least 1,000 nodes and 5,000 relationships. If your chosen public dataset is smaller than this, you may expand it by generating additional synthetic data to meet the recommended size.
@@ -40,3 +40,13 @@ In this project, your team will design and develop a basic social networking app
 11. Explore Popular Users - The system displays the most-followed users.
 
 ---
+
+# Requirements
+
+Python 3.13
+uv (Python Package Manager) : https://docs.astral.sh/uv/getting-started/installation/
+Neo4j AuraDB
+
+
+
+

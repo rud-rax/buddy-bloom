@@ -1,0 +1,2 @@
+userId,username,email,name,bio,createdAt,passwordHash,status,version
+b7e9a7c2-0cde-4ac7-9f0e-4f8f7ff88f8d,alice,alice@example.com,Alice,,2025-11-20T03:15:27Z,$2b$12$hashhashhash,active,1
