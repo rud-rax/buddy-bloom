@@ -1,0 +1,56 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.6 Safari/605.1.15" version="29.2.1">
+  <diagram name="Page-1" id="R2rgcHtVCV0VzBcxyaoH">
+    <mxGraphModel dx="1426" dy="807" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="wpXWILZAvSacZ0PVOBWj-9" edge="1" parent="1" source="wpXWILZAvSacZ0PVOBWj-2" style="edgeStyle=none;curved=1;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=12;startSize=8;endSize=8;" target="wpXWILZAvSacZ0PVOBWj-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="wpXWILZAvSacZ0PVOBWj-2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;" value="Console (Python)" vertex="1">
+          <mxGeometry height="60" width="120" x="270" y="170" as="geometry" />
+        </mxCell>
+        <mxCell id="wpXWILZAvSacZ0PVOBWj-10" edge="1" parent="1" source="wpXWILZAvSacZ0PVOBWj-3" style="edgeStyle=none;curved=1;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=12;startSize=8;endSize=8;" target="wpXWILZAvSacZ0PVOBWj-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="wpXWILZAvSacZ0PVOBWj-3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="Logic" vertex="1">
+          <mxGeometry height="60" width="120" x="270" y="340" as="geometry" />
+        </mxCell>
+        <mxCell id="wpXWILZAvSacZ0PVOBWj-11" edge="1" parent="1" source="wpXWILZAvSacZ0PVOBWj-4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;startSize=8;endSize=8;startArrow=classic;startFill=1;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="540" y="480" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="wpXWILZAvSacZ0PVOBWj-4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="API" vertex="1">
+          <mxGeometry height="60" width="120" x="270" y="450" as="geometry" />
+        </mxCell>
+        <mxCell id="PiRhtcEJF-Xhi8x9baKB-2" edge="1" parent="1" source="wpXWILZAvSacZ0PVOBWj-5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="wpXWILZAvSacZ0PVOBWj-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="PiRhtcEJF-Xhi8x9baKB-3" connectable="0" parent="PiRhtcEJF-Xhi8x9baKB-2" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="interacts" vertex="1">
+          <mxGeometry relative="1" x="-0.1298" y="3" as="geometry">
+            <mxPoint y="7" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="wpXWILZAvSacZ0PVOBWj-5" parent="1" style="html=1;verticalLabelPosition=bottom;align=center;labelBackgroundColor=#ffffff;verticalAlign=top;strokeWidth=2;strokeColor=#0080F0;shadow=0;dashed=0;shape=mxgraph.ios7.icons.user;rotation=0;" value="User" vertex="1">
+          <mxGeometry height="50" width="50" x="547.55" y="175" as="geometry" />
+        </mxCell>
+        <mxCell id="wpXWILZAvSacZ0PVOBWj-8" parent="1" style="points=[];aspect=fixed;html=1;align=center;shadow=0;dashed=0;fillColor=#FF6A00;strokeColor=none;shape=mxgraph.alibaba_cloud.gdb_graph_database;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;" value="Graph Database" vertex="1">
+          <mxGeometry height="47.400000000000006" width="54.900000000000006" x="542.65" y="456.3" as="geometry" />
+        </mxCell>
+        <mxCell id="PiRhtcEJF-Xhi8x9baKB-4" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;font style=&quot;font-size: 20px;&quot;&gt;Buddy Bloom Architecture&lt;/font&gt;" vertex="1">
+          <mxGeometry height="30" width="250" x="50" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="PiRhtcEJF-Xhi8x9baKB-6" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="Repository" vertex="1">
+          <mxGeometry height="30" width="60" x="200" y="465" as="geometry" />
+        </mxCell>
+        <mxCell id="PiRhtcEJF-Xhi8x9baKB-7" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="Services" vertex="1">
+          <mxGeometry height="30" width="60" x="200" y="360" as="geometry" />
+        </mxCell>
+        <mxCell id="PiRhtcEJF-Xhi8x9baKB-8" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="Controller" vertex="1">
+          <mxGeometry height="30" width="60" x="200" y="180" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
