@@ -44,9 +44,39 @@ In this project, your team will design and develop a basic social networking app
 # Requirements
 
 Python 3.13
+
 uv (Python Package Manager) : https://docs.astral.sh/uv/getting-started/installation/
+
 Neo4j AuraDB
 
+---
+
+# Architecture
+
+![Architecture V1](wiki/buddy-bloom-arch-v1.drawio.png)
+
+
+**Model**: 
+Represents the data and its associated business rules. This can include:
+- Domain Objects/Entities: Plain objects representing the core data structure (e.g., User, Product). These are often mapped to database tables.
+- Data Transfer Objects (DTOs): Objects used for transferring data between layers, often tailored for specific views or API responses.
+
+**Repository**: Acts as an abstraction layer for data access. Its responsibilities include:
+- Providing methods for CRUD (Create, Read, Update, Delete) operations on specific data entities.
+- Abstracting the underlying data storage mechanism (e.g., a database, a file system).
+- Often interacting with ORMs (Object-Relational Mappers)
+
+**Service**: Contains the core business logic of the application. Its responsibilities include:
+
+- Implementing complex business rules and workflows.
+- Performing data validation and transformation before passing data to repositories or controllers.
+- Ensuring transactional integrity for operations spanning multiple data changes.
+
+**Controller**: Handles incoming requests from the user and prepares responses. Its responsibilities include:
+- Receiving and validating input from requests.
+- Delegating business logic execution to the appropriate service.
+- Mapping data from the service layer to suitable view models or DTOs for presentation.
+- Returning responses to the client, often in formats like JSON.
 
 
 
