@@ -74,20 +74,33 @@ class UserCRUD:
             record = result.single()
             return record.data() if record else None
 
-    def update_user(self, user_id: str, username: Optional[str] = None, password_hash: Optional[str] = None):
+    def update_user(self, user_id: str, username: Optional[str] = None, password_hash: Optional[str] = None, name: Optional[str] = None, email: Optional[str] = None):
+        """
+        Updates fields on a user node based on provided, non-None values.
+        Returns the updated user's basic data.
+        """
         with self.driver.session() as session:
             set_clauses = []
             params = {"userId": user_id}
+            
             if username is not None:
                 set_clauses.append("u.username = $username")
                 params["username"] = username
             if password_hash is not None:
                 set_clauses.append("u.passwordHash = $password_hash")
                 params["password_hash"] = password_hash
+            if name is not None:
+                set_clauses.append("u.name = $name")
+                params["name"] = name
+            if email is not None:
+                set_clauses.append("u.email = $email")
+                params["email"] = email
+                
             if not set_clauses:
                 return None
+            
             set_clause_str = ", ".join(set_clauses)
-            query = f"MATCH (u:User {{userId: $userId}}) SET {set_clause_str} RETURN u.userId AS userId, u.username AS username, u.passwordHash AS passwordHash"
+            query = f"MATCH (u:User {{userId: $userId}}) SET {set_clause_str} RETURN u.userId AS userId, u.username AS username, u.passwordHash AS passwordHash, u.name AS name, u.email AS email"
             result = session.run(query, parameters=params)
             record = result.single()
             return record.data() if record else None
