@@ -34,3 +34,17 @@ class UserService:
         if check_password(password, user.passwordHash):
             return user
         return None
+    
+    def update_profile(self, user_id: str, name: Optional[str] = None, email: Optional[str] = None, new_password: Optional[str] = None) -> Optional[User]:
+        password_hash = None
+        if new_password:
+            password_hash = hash_password(new_password)
+        
+        updated_user = self.repo.update(
+            user_id, 
+            name=name, 
+            email=email, 
+            password_hash=password_hash
+        )
+        
+        return updated_user
