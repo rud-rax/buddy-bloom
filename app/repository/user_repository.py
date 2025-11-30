@@ -26,6 +26,17 @@ class UserRepository:
         if not data:
             return None
         return self._to_model(data)
+    
+    def update(self, user_id: str, name: Optional[str] = None, email: Optional[str] = None, password_hash: Optional[str] = None) -> Optional[User]:
+        data = self.crud.update_user(
+            user_id=user_id,
+            name=name,
+            email=email,
+            password_hash=password_hash
+        )
+        if not data:
+            return None
+        return self._to_model(data)
 
     def _to_model(self, data: dict) -> User:
         # map DB record dict into User model; fill missing fields with sensible defaults
