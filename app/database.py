@@ -100,7 +100,13 @@ class UserCRUD:
                 return None
             
             set_clause_str = ", ".join(set_clauses)
-            query = f"MATCH (u:User {{userId: $userId}}) SET {set_clause_str} RETURN u.userId AS userId, u.username AS username, u.passwordHash AS passwordHash, u.name AS name, u.email AS email"
+            query = f"""
+            MATCH (u:User {{userId: $userId}}) 
+            SET {set_clause_str} 
+            RETURN u.userId AS userId, u.username AS username, u.passwordHash AS passwordHash, 
+                   u.name AS name, u.email AS email, 
+                   u.followersCount AS followersCount, u.followingCount AS followingCount
+            """
             result = session.run(query, parameters=params)
             record = result.single()
             return record.data() if record else None
