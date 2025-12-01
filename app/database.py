@@ -110,47 +110,67 @@ class UserCRUD:
             session.run("MATCH (u:User {userId: $userId}) DELETE u", userId=user_id)
 
     def follow_user(self, follower_username: str, followee_username: str) -> bool:
-        """Create a FOLLOWS relationship from follower to followee and update follow counts.
-
-        Returns True if successful, False if user not found or already follows.
         """
+        Create a FOLLOWS relationship and increment the denormalized counts.
+        Returns True if the relationship was created/updated, False otherwise.
+        """
+        if follower_username == followee_username:
+            return False
+
         with self.driver.session() as session:
-            # Prevent self-follow and create relationship
+            # Cypher query to:
+            # 1. Match the follower and followee nodes by their unique username.
+            # 2. MERGE the FOLLOWS relationship (creates it if it doesn't exist).
+            # 3. Use an ON CREATE clause to increment the counts ONLY if the relationship is new.
+            # 4. Return the relationship to confirm success.
+            query = """
+            MATCH (follower:User {username: $follower_username})
+            MATCH (followee:User {username: $followee_username})
+            MERGE (follower)-[f:FOLLOWS]->(followee)
+            ON CREATE SET f.since = datetime()
+            ON CREATE SET 
+                follower.followingCount = coalesce(follower.followingCount, 0) + 1,
+                followee.followersCount = coalesce(followee.followersCount, 0) + 1
+            RETURN f
+            """
             result = session.run(
-                """
-                MATCH (follower:User {username: $follower_username}), (followee:User {username: $followee_username})
-                WHERE follower.username <> followee.username
-                MERGE (follower)-[:FOLLOWS]->(followee)
-                ON CREATE SET follower.followingCount = COALESCE(follower.followingCount, 0) + 1,
-                              followee.followersCount = COALESCE(followee.followersCount, 0) + 1
-                RETURN follower.username AS follower, followee.username AS followee
-                """,
+                query,
                 follower_username=follower_username,
-                followee_username=followee_username,
+                followee_username=followee_username
             )
-            record = result.single()
-            return record is not None
+            # If a row is returned, the MERGE was successful (either created or matched)
+            # However, the counter only increments on CREATE, which is what we want.
+            return bool(result.single())
 
     def unfollow_user(self, follower_username: str, followee_username: str) -> bool:
-        """Delete a FOLLOWS relationship and update follow counts.
-
-        Returns True if successful, False if relationship not found.
         """
+        Remove a FOLLOWS relationship and decrement the denormalized counts.
+        Returns True if the relationship was deleted, False otherwise.
+        """
+        if follower_username == followee_username:
+            return False
+
         with self.driver.session() as session:
+            # Cypher query to:
+            # 1. Match the relationship and the two nodes.
+            # 2. DELETE the relationship.
+            # 3. Conditional decrement: decrement the counters ONLY IF the relationship existed and was deleted.
+            query = """
+            MATCH (follower:User {username: $follower_username})-[f:FOLLOWS]->(followee:User {username: $followee_username})
+            WITH follower, followee, f
+            DELETE f
+            SET 
+                follower.followingCount = coalesce(follower.followingCount, 1) - 1,
+                followee.followersCount = coalesce(followee.followersCount, 1) - 1
+            RETURN follower, followee
+            """
             result = session.run(
-                """
-                MATCH (follower:User {username: $follower_username})-[r:FOLLOWS]->(followee:User {username: $followee_username})
-                WITH follower, followee, r
-                DELETE r
-                SET follower.followingCount = CASE WHEN COALESCE(follower.followingCount, 0) - 1 < 0 THEN 0 ELSE COALESCE(follower.followingCount, 0) - 1 END,
-                    followee.followersCount = CASE WHEN COALESCE(followee.followersCount, 0) - 1 < 0 THEN 0 ELSE COALESCE(followee.followersCount, 0) - 1 END
-                RETURN follower.username AS follower, followee.username AS followee
-                """,
+                query,
                 follower_username=follower_username,
-                followee_username=followee_username,
+                followee_username=followee_username
             )
-            record = result.single()
-            return record is not None
+            # The result will be empty if the relationship didn't exist/wasn't deleted.
+            return bool(result.single())
 
     def get_followers_for_user(self, username: str, skip: int = 0, limit: int = 100) -> list:
         """Return list of follower user dicts for `username`, with pagination."""
