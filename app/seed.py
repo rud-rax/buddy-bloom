@@ -24,7 +24,6 @@ def seed_data():
 
     if users:
         with crud.driver.session() as session:
-            # We use UNWIND to batch insert users efficiently
             query = """
             UNWIND $rows AS row
             MERGE (u:User {username: row.username})
@@ -49,7 +48,6 @@ def seed_data():
     if connections:
         with crud.driver.session() as session:
             # Create relationships and update counts
-            # Note: We do this in batches of 1000 to be safe, though 5000 total is small
             batch_size = 1000
             for i in range(0, len(connections), batch_size):
                 batch = connections[i : i + batch_size]

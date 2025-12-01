@@ -6,7 +6,7 @@ import bcrypt
 EDGE_FILE = 'gplus_combined.txt'
 USERS_CSV = 'users.csv'
 CONNECTIONS_CSV = 'connections.csv'
-TARGET_NODE_COUNT = 1500 # Slightly over the 1,000 required nodes for safety
+TARGET_NODE_COUNT = 1500
 TARGET_PASSWORD = 'password123'
 
 # Data structures to hold results
