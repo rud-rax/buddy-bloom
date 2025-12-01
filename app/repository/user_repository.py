@@ -50,3 +50,11 @@ class UserRepository:
             followersCount=int(data.get("followersCount", 0)) if data.get("followersCount") is not None else 0,
             followingCount=int(data.get("followingCount", 0)) if data.get("followingCount") is not None else 0,
         )
+
+    def follow(self, follower_username: str, followee_username: str) -> bool:
+        """Create a follow relationship via the CRUD layer."""
+        return self.crud.follow_user(follower_username, followee_username)
+
+    def unfollow(self, follower_username: str, followee_username: str) -> bool:
+        """Remove a follow relationship via the CRUD layer."""
+        return self.crud.unfollow_user(follower_username, followee_username)

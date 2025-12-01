@@ -59,7 +59,7 @@ class UserCRUD:
     def get_user(self, user_id: str):
         with self.driver.session() as session:
             result = session.run(
-                "MATCH (u:User {userId: $userId}) RETURN u.userId AS userId, u.username AS username, u.passwordHash AS passwordHash, u.name AS name, u.email AS email",
+                "MATCH (u:User {userId: $userId}) RETURN u.userId AS userId, u.username AS username, u.passwordHash AS passwordHash, u.name AS name, u.email AS email, u.followersCount AS followersCount, u.followingCount AS followingCount",
                 userId=user_id,
             )
             record = result.single()
@@ -68,7 +68,7 @@ class UserCRUD:
     def get_user_by_username(self, username: str):
         with self.driver.session() as session:
             result = session.run(
-                "MATCH (u:User {username: $username}) RETURN u.userId AS userId, u.username AS username, u.passwordHash AS passwordHash, u.name AS name, u.email AS email",
+                "MATCH (u:User {username: $username}) RETURN u.userId AS userId, u.username AS username, u.passwordHash AS passwordHash, u.name AS name, u.email AS email, u.followersCount AS followersCount, u.followingCount AS followingCount",
                 username=username,
             )
             record = result.single()
@@ -108,6 +108,49 @@ class UserCRUD:
     def delete_user(self, user_id: str):
         with self.driver.session() as session:
             session.run("MATCH (u:User {userId: $userId}) DELETE u", userId=user_id)
+
+    def follow_user(self, follower_username: str, followee_username: str) -> bool:
+        """Create a FOLLOWS relationship from follower to followee and update follow counts.
+
+        Returns True if successful, False if user not found or already follows.
+        """
+        with self.driver.session() as session:
+            # Prevent self-follow and create relationship
+            result = session.run(
+                """
+                MATCH (follower:User {username: $follower_username}), (followee:User {username: $followee_username})
+                WHERE follower.username <> followee.username
+                MERGE (follower)-[:FOLLOWS]->(followee)
+                ON CREATE SET follower.followingCount = COALESCE(follower.followingCount, 0) + 1,
+                              followee.followersCount = COALESCE(followee.followersCount, 0) + 1
+                RETURN follower.username AS follower, followee.username AS followee
+                """,
+                follower_username=follower_username,
+                followee_username=followee_username,
+            )
+            record = result.single()
+            return record is not None
+
+    def unfollow_user(self, follower_username: str, followee_username: str) -> bool:
+        """Delete a FOLLOWS relationship and update follow counts.
+
+        Returns True if successful, False if relationship not found.
+        """
+        with self.driver.session() as session:
+            result = session.run(
+                """
+                MATCH (follower:User {username: $follower_username})-[r:FOLLOWS]->(followee:User {username: $followee_username})
+                WITH follower, followee, r
+                DELETE r
+                SET follower.followingCount = CASE WHEN COALESCE(follower.followingCount, 0) - 1 < 0 THEN 0 ELSE COALESCE(follower.followingCount, 0) - 1 END,
+                    followee.followersCount = CASE WHEN COALESCE(followee.followersCount, 0) - 1 < 0 THEN 0 ELSE COALESCE(followee.followersCount, 0) - 1 END
+                RETURN follower.username AS follower, followee.username AS followee
+                """,
+                follower_username=follower_username,
+                followee_username=followee_username,
+            )
+            record = result.single()
+            return record is not None
 
 
 if __name__ == "__main__":

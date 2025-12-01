@@ -72,7 +72,9 @@ def logged_in_menu(service: UserService, current_user: User):
         print(f"\n=== Buddy-Bloom Console: Logged in as {current_user.username} ===\n")
         print("1) View Profile")
         print("2) Edit Profile")
-        print("3) Logout")
+        print("3) Follow User")
+        print("4) Unfollow User")
+        print("5) Logout")
         choice = input("Choose an option: ").strip()
 
         if choice == "1":
@@ -80,13 +82,34 @@ def logged_in_menu(service: UserService, current_user: User):
 
         elif choice == "2":
             current_user = edit_profile_flow(service, current_user)
-            
+
         elif choice == "3":
+            target_username = input("Username to follow: ").strip()
+            if not target_username:
+                print("No username provided.")
+            else:
+                success, message = service.follow(current_user, target_username)
+                print(message)
+                if success:
+                    # refresh current_user counts
+                    current_user = service.repo.get_by_username(current_user.username)
+
+        elif choice == "4":
+            target_username = input("Username to unfollow: ").strip()
+            if not target_username:
+                print("No username provided.")
+            else:
+                success, message = service.unfollow(current_user, target_username)
+                print(message)
+                if success:
+                    current_user = service.repo.get_by_username(current_user.username)
+
+        elif choice == "5":
             print("Logged out successfully.")
             return None # Signal to the main function to return to the pre-login menu
-        
+
         else:
-            print("Invalid choice. Please select 1, 2 or 3.")
+            print("Invalid choice. Please select 1-5.")
             
         # Ensure the menu uses the potentially updated current_user for the next iteration
         if current_user is None:
