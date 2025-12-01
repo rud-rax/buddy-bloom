@@ -152,6 +152,38 @@ class UserCRUD:
             record = result.single()
             return record is not None
 
+    def get_followers_for_user(self, username: str, skip: int = 0, limit: int = 100) -> list:
+        """Return list of follower user dicts for `username`, with pagination."""
+        with self.driver.session() as session:
+            result = session.run(
+                """
+                MATCH (f:User)-[:FOLLOWS]->(u:User {username: $username})
+                RETURN f.userId AS userId, f.username AS username, f.name AS name, f.email AS email,
+                       f.followersCount AS followersCount, f.followingCount AS followingCount
+                ORDER BY f.username SKIP $skip LIMIT $limit
+                """,
+                username=username,
+                skip=skip,
+                limit=limit,
+            )
+            return [r.data() for r in result]
+
+    def get_following_for_user(self, username: str, skip: int = 0, limit: int = 100) -> list:
+        """Return list of users that `username` follows, with pagination."""
+        with self.driver.session() as session:
+            result = session.run(
+                """
+                MATCH (u:User {username: $username})-[:FOLLOWS]->(followee:User)
+                RETURN followee.userId AS userId, followee.username AS username, followee.name AS name, followee.email AS email,
+                       followee.followersCount AS followersCount, followee.followingCount AS followingCount
+                ORDER BY followee.username SKIP $skip LIMIT $limit
+                """,
+                username=username,
+                skip=skip,
+                limit=limit,
+            )
+            return [r.data() for r in result]
+
 
 if __name__ == "__main__":
     crud = UserCRUD(NEO4J_URI, NEO4J_USERNAME, NEO4J_PASSWORD)

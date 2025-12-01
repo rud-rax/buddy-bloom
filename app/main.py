@@ -74,7 +74,9 @@ def logged_in_menu(service: UserService, current_user: User):
         print("2) Edit Profile")
         print("3) Follow User")
         print("4) Unfollow User")
-        print("5) Logout")
+        print("5) View Followers")
+        print("6) View Following")
+        print("7) Logout")
         choice = input("Choose an option: ").strip()
 
         if choice == "1":
@@ -105,11 +107,37 @@ def logged_in_menu(service: UserService, current_user: User):
                     current_user = service.repo.get_by_username(current_user.username)
 
         elif choice == "5":
+            success, followers, msg = service.get_followers(current_user)
+            if not success:
+                print(msg)
+            else:
+                if not followers:
+                    print("No followers found.")
+                else:
+                    print("\n--- Followers ---")
+                    for u in followers:
+                        print(f" - {u.username} ({u.name}) — followers:{u.followersCount} following:{u.followingCount}")
+                    print("-----------------")
+
+        elif choice == "6":
+            success, following, msg = service.get_following(current_user)
+            if not success:
+                print(msg)
+            else:
+                if not following:
+                    print('Not following anyone.')
+                else:
+                    print("\n--- Following ---")
+                    for u in following:
+                        print(f" - {u.username} ({u.name}) — followers:{u.followersCount} following:{u.followingCount}")
+                    print("-----------------")
+
+        elif choice == "7":
             print("Logged out successfully.")
             return None # Signal to the main function to return to the pre-login menu
 
         else:
-            print("Invalid choice. Please select 1-5.")
+            print("Invalid choice. Please select 1-7.")
             
         # Ensure the menu uses the potentially updated current_user for the next iteration
         if current_user is None:

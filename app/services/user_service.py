@@ -49,6 +49,42 @@ class UserService:
         
         return updated_user
 
+    def get_followers(self, current_user: User, target_username: Optional[str] = None, skip: int = 0, limit: int = 100) -> tuple[bool, list[User], str]:
+        """Return followers for target_username (defaults to current_user)."""
+        if not current_user:
+            return False, [], "Authentication required."
+
+        target = target_username or current_user.username
+        if skip < 0 or limit <= 0:
+            return False, [], "Invalid pagination parameters."
+        if limit > 1000:
+            return False, [], "Limit too large."
+
+        target_user = self.repo.get_by_username(target)
+        if not target_user:
+            return False, [], "Target user not found."
+
+        followers = self.repo.get_followers(target, skip=skip, limit=limit)
+        return True, followers, f"Found {len(followers)} followers for {target}."
+
+    def get_following(self, current_user: User, target_username: Optional[str] = None, skip: int = 0, limit: int = 100) -> tuple[bool, list[User], str]:
+        """Return users that target_username follows (defaults to current_user)."""
+        if not current_user:
+            return False, [], "Authentication required."
+
+        target = target_username or current_user.username
+        if skip < 0 or limit <= 0:
+            return False, [], "Invalid pagination parameters."
+        if limit > 1000:
+            return False, [], "Limit too large."
+
+        target_user = self.repo.get_by_username(target)
+        if not target_user:
+            return False, [], "Target user not found."
+
+        following = self.repo.get_following(target, skip=skip, limit=limit)
+        return True, following, f"Found {len(following)} users followed by {target}."
+
     def follow(self, current_user: User, target_username: str) -> tuple[bool, str]:
         """Make current_user follow target_username.
 
