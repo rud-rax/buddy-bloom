@@ -34,7 +34,7 @@ class UserCRUD:
         except Exception:
             pass
 
-    def create_user(self, user_id: str, username: str, password_hash: str, name: str = None, email: str = None):
+    def create_user(self, user_id: str, username: str, password_hash: str, name: str = None, email: str = None, bio: str = None):
         """Create a user idempotently by username.
 
         If the username already exists the existing node is returned and not duplicated.
@@ -44,14 +44,15 @@ class UserCRUD:
             result = session.run(
                 """
                 MERGE (u:User {username: $username})
-                ON CREATE SET u.userId = $userId, u.passwordHash = $passwordHash, u.name = $name, u.email = $email
-                RETURN u.userId AS userId, u.username AS username, u.passwordHash AS passwordHash, u.name AS name, u.email AS email
+                ON CREATE SET u.userId = $userId, u.passwordHash = $passwordHash, u.name = $name, u.email = $email, u.bio = $bio
+                RETURN u.userId AS userId, u.username AS username, u.passwordHash AS passwordHash, u.name AS name, u.email AS email, u.bio = $bio
                 """,
                 userId=user_id,
                 username=username,
                 passwordHash=password_hash,
                 name=name,
                 email=email,
+                bio=bio,
             )
             record = result.single()
             return record.data() if record else None
@@ -59,7 +60,7 @@ class UserCRUD:
     def get_user(self, user_id: str):
         with self.driver.session() as session:
             result = session.run(
-                "MATCH (u:User {userId: $userId}) RETURN u.userId AS userId, u.username AS username, u.passwordHash AS passwordHash, u.name AS name, u.email AS email, u.followersCount AS followersCount, u.followingCount AS followingCount",
+                "MATCH (u:User {userId: $userId}) RETURN u.userId AS userId, u.username AS username, u.passwordHash AS passwordHash, u.name AS name, u.email AS email, u.followersCount AS followersCount, u.followingCount AS followingCount, u.bio AS bio",
                 userId=user_id,
             )
             record = result.single()
@@ -68,13 +69,13 @@ class UserCRUD:
     def get_user_by_username(self, username: str):
         with self.driver.session() as session:
             result = session.run(
-                "MATCH (u:User {username: $username}) RETURN u.userId AS userId, u.username AS username, u.passwordHash AS passwordHash, u.name AS name, u.email AS email, u.followersCount AS followersCount, u.followingCount AS followingCount",
+                "MATCH (u:User {username: $username}) RETURN u.userId AS userId, u.username AS username, u.passwordHash AS passwordHash, u.name AS name, u.email AS email, u.followersCount AS followersCount, u.followingCount AS followingCount, u.bio AS bio",
                 username=username,
             )
             record = result.single()
             return record.data() if record else None
 
-    def update_user(self, user_id: str, username: Optional[str] = None, password_hash: Optional[str] = None, name: Optional[str] = None, email: Optional[str] = None):
+    def update_user(self, user_id: str, username: Optional[str] = None, password_hash: Optional[str] = None, name: Optional[str] = None, email: Optional[str] = None, bio=None):
         """
         Updates fields on a user node based on provided, non-None values.
         Returns the updated user's basic data.
@@ -95,6 +96,9 @@ class UserCRUD:
             if email is not None:
                 set_clauses.append("u.email = $email")
                 params["email"] = email
+            if bio is not None:
+                set_clauses.append("u.bio = $bio")
+                params["bio"] = bio
                 
             if not set_clauses:
                 return None
@@ -104,7 +108,7 @@ class UserCRUD:
             MATCH (u:User {{userId: $userId}}) 
             SET {set_clause_str} 
             RETURN u.userId AS userId, u.username AS username, u.passwordHash AS passwordHash, 
-                   u.name AS name, u.email AS email, 
+                   u.name AS name, u.email AS email, u.bio AS bio, 
                    u.followersCount AS followersCount, u.followingCount AS followingCount
             """
             result = session.run(query, parameters=params)

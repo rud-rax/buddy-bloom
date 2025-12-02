@@ -71,13 +71,15 @@ for i, raw_id in enumerate(ordered_ids):
     username = f"user_{raw_id}"
     name = f"Graph User {i+1}"
     email = f"user_{raw_id}@gplus.com"
+    bio = "Hello! I am a user of Buddy-Bloom."
     
     user_data.append({
         'userId': raw_id,
         'username': username,
         'name': name,
         'email': email,
-        'passwordHash': DEFAULT_HASH
+        'passwordHash': DEFAULT_HASH,
+        'bio': bio
     })
 
 # Create a mapping dictionary for relationship creation
@@ -87,7 +89,7 @@ id_to_username = {u['userId']: u['username'] for u in user_data}
 
 # 1. Write Users CSV
 with open(USERS_CSV, 'w', newline='', encoding='utf-8') as f:
-    fieldnames = ['userId', 'username', 'name', 'email', 'passwordHash']
+    fieldnames = ['userId', 'username', 'name', 'email', 'passwordHash', 'bio']
     writer = csv.DictWriter(f, fieldnames=fieldnames)
     
     writer.writeheader()

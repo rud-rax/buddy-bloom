@@ -31,6 +31,7 @@ def seed_data():
                 u.name = row.name,
                 u.email = row.email,
                 u.passwordHash = row.passwordHash,
+                u.bio = row.bio,
                 u.followersCount = 0,
                 u.followingCount = 0
             """
