@@ -16,6 +16,7 @@ class UserRepository:
             user.passwordHash or "",
             name=user.name,
             email=user.email,
+            bio=user.bio,
         )
         if not data:
             return None
@@ -27,11 +28,12 @@ class UserRepository:
             return None
         return self._to_model(data)
     
-    def update(self, user_id: str, name: Optional[str] = None, email: Optional[str] = None, password_hash: Optional[str] = None) -> Optional[User]:
+    def update(self, user_id: str, name: Optional[str] = None, email: Optional[str] = None, password_hash: Optional[str] = None, bio: Optional[str] = None) -> Optional[User]:
         data = self.crud.update_user(
             user_id=user_id,
             name=name,
             email=email,
+            bio=bio,
             password_hash=password_hash
         )
         if not data:
@@ -45,6 +47,7 @@ class UserRepository:
             username=data.get("username") or "",
             email=data.get("email") or "",
             name=data.get("name") or "",
+            bio=data.get("bio") or "",
             passwordHash=data.get("passwordHash"),
             version=int(data.get("version", 1)),
             followersCount=int(data.get("followersCount", 0)) if data.get("followersCount") is not None else 0,

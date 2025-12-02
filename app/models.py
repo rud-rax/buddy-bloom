@@ -9,10 +9,11 @@ class User(BaseModel):
     """
 
     userId: str
-    username: str = Field(..., min_length=3, max_length=24)
+    username: str = Field(..., min_length=3, max_length=48)
     email: EmailStr
     name: str = Field(..., min_length=1, max_length=64)
     passwordHash: Optional[str] = None  # stored internally, excluded in responses if needed
+    bio: Optional[str] = None
     version: int = 1
 
     # Computed fields (not stored in CSV — added dynamically when queried)

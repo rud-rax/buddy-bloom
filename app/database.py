@@ -34,7 +34,7 @@ class UserCRUD:
         except Exception:
             pass
 
-    def create_user(self, user_id: str, username: str, password_hash: str, name: str = None, email: str = None):
+    def create_user(self, user_id: str, username: str, password_hash: str, name: str = None, email: str = None, bio: str = None):
         """Create a user idempotently by username.
 
         If the username already exists the existing node is returned and not duplicated.
@@ -44,14 +44,15 @@ class UserCRUD:
             result = session.run(
                 """
                 MERGE (u:User {username: $username})
-                ON CREATE SET u.userId = $userId, u.passwordHash = $passwordHash, u.name = $name, u.email = $email
-                RETURN u.userId AS userId, u.username AS username, u.passwordHash AS passwordHash, u.name AS name, u.email AS email
+                ON CREATE SET u.userId = $userId, u.passwordHash = $passwordHash, u.name = $name, u.email = $email, u.bio = $bio
+                RETURN u.userId AS userId, u.username AS username, u.passwordHash AS passwordHash, u.name AS name, u.email AS email, u.bio = $bio
                 """,
                 userId=user_id,
                 username=username,
                 passwordHash=password_hash,
                 name=name,
                 email=email,
+                bio=bio,
             )
             record = result.single()
             return record.data() if record else None
@@ -59,7 +60,7 @@ class UserCRUD:
     def get_user(self, user_id: str):
         with self.driver.session() as session:
             result = session.run(
-                "MATCH (u:User {userId: $userId}) RETURN u.userId AS userId, u.username AS username, u.passwordHash AS passwordHash, u.name AS name, u.email AS email, u.followersCount AS followersCount, u.followingCount AS followingCount",
+                "MATCH (u:User {userId: $userId}) RETURN u.userId AS userId, u.username AS username, u.passwordHash AS passwordHash, u.name AS name, u.email AS email, u.followersCount AS followersCount, u.followingCount AS followingCount, u.bio AS bio",
                 userId=user_id,
             )
             record = result.single()
@@ -68,13 +69,13 @@ class UserCRUD:
     def get_user_by_username(self, username: str):
         with self.driver.session() as session:
             result = session.run(
-                "MATCH (u:User {username: $username}) RETURN u.userId AS userId, u.username AS username, u.passwordHash AS passwordHash, u.name AS name, u.email AS email, u.followersCount AS followersCount, u.followingCount AS followingCount",
+                "MATCH (u:User {username: $username}) RETURN u.userId AS userId, u.username AS username, u.passwordHash AS passwordHash, u.name AS name, u.email AS email, u.followersCount AS followersCount, u.followingCount AS followingCount, u.bio AS bio",
                 username=username,
             )
             record = result.single()
             return record.data() if record else None
 
-    def update_user(self, user_id: str, username: Optional[str] = None, password_hash: Optional[str] = None, name: Optional[str] = None, email: Optional[str] = None):
+    def update_user(self, user_id: str, username: Optional[str] = None, password_hash: Optional[str] = None, name: Optional[str] = None, email: Optional[str] = None, bio=None):
         """
         Updates fields on a user node based on provided, non-None values.
         Returns the updated user's basic data.
@@ -95,12 +96,21 @@ class UserCRUD:
             if email is not None:
                 set_clauses.append("u.email = $email")
                 params["email"] = email
+            if bio is not None:
+                set_clauses.append("u.bio = $bio")
+                params["bio"] = bio
                 
             if not set_clauses:
                 return None
             
             set_clause_str = ", ".join(set_clauses)
-            query = f"MATCH (u:User {{userId: $userId}}) SET {set_clause_str} RETURN u.userId AS userId, u.username AS username, u.passwordHash AS passwordHash, u.name AS name, u.email AS email"
+            query = f"""
+            MATCH (u:User {{userId: $userId}}) 
+            SET {set_clause_str} 
+            RETURN u.userId AS userId, u.username AS username, u.passwordHash AS passwordHash, 
+                   u.name AS name, u.email AS email, u.bio AS bio, 
+                   u.followersCount AS followersCount, u.followingCount AS followingCount
+            """
             result = session.run(query, parameters=params)
             record = result.single()
             return record.data() if record else None
@@ -110,47 +120,67 @@ class UserCRUD:
             session.run("MATCH (u:User {userId: $userId}) DELETE u", userId=user_id)
 
     def follow_user(self, follower_username: str, followee_username: str) -> bool:
-        """Create a FOLLOWS relationship from follower to followee and update follow counts.
-
-        Returns True if successful, False if user not found or already follows.
         """
+        Create a FOLLOWS relationship and increment the denormalized counts.
+        Returns True if the relationship was created/updated, False otherwise.
+        """
+        if follower_username == followee_username:
+            return False
+
         with self.driver.session() as session:
-            # Prevent self-follow and create relationship
+            # Cypher query to:
+            # 1. Match the follower and followee nodes by their unique username.
+            # 2. MERGE the FOLLOWS relationship (creates it if it doesn't exist).
+            # 3. Use an ON CREATE clause to increment the counts ONLY if the relationship is new.
+            # 4. Return the relationship to confirm success.
+            query = """
+            MATCH (follower:User {username: $follower_username})
+            MATCH (followee:User {username: $followee_username})
+            MERGE (follower)-[f:FOLLOWS]->(followee)
+            ON CREATE SET f.since = datetime()
+            ON CREATE SET 
+                follower.followingCount = coalesce(follower.followingCount, 0) + 1,
+                followee.followersCount = coalesce(followee.followersCount, 0) + 1
+            RETURN f
+            """
             result = session.run(
-                """
-                MATCH (follower:User {username: $follower_username}), (followee:User {username: $followee_username})
-                WHERE follower.username <> followee.username
-                MERGE (follower)-[:FOLLOWS]->(followee)
-                ON CREATE SET follower.followingCount = COALESCE(follower.followingCount, 0) + 1,
-                              followee.followersCount = COALESCE(followee.followersCount, 0) + 1
-                RETURN follower.username AS follower, followee.username AS followee
-                """,
+                query,
                 follower_username=follower_username,
-                followee_username=followee_username,
+                followee_username=followee_username
             )
-            record = result.single()
-            return record is not None
+            # If a row is returned, the MERGE was successful (either created or matched)
+            # However, the counter only increments on CREATE, which is what we want.
+            return bool(result.single())
 
     def unfollow_user(self, follower_username: str, followee_username: str) -> bool:
-        """Delete a FOLLOWS relationship and update follow counts.
-
-        Returns True if successful, False if relationship not found.
         """
+        Remove a FOLLOWS relationship and decrement the denormalized counts.
+        Returns True if the relationship was deleted, False otherwise.
+        """
+        if follower_username == followee_username:
+            return False
+
         with self.driver.session() as session:
+            # Cypher query to:
+            # 1. Match the relationship and the two nodes.
+            # 2. DELETE the relationship.
+            # 3. Conditional decrement: decrement the counters ONLY IF the relationship existed and was deleted.
+            query = """
+            MATCH (follower:User {username: $follower_username})-[f:FOLLOWS]->(followee:User {username: $followee_username})
+            WITH follower, followee, f
+            DELETE f
+            SET 
+                follower.followingCount = coalesce(follower.followingCount, 1) - 1,
+                followee.followersCount = coalesce(followee.followersCount, 1) - 1
+            RETURN follower, followee
+            """
             result = session.run(
-                """
-                MATCH (follower:User {username: $follower_username})-[r:FOLLOWS]->(followee:User {username: $followee_username})
-                WITH follower, followee, r
-                DELETE r
-                SET follower.followingCount = CASE WHEN COALESCE(follower.followingCount, 0) - 1 < 0 THEN 0 ELSE COALESCE(follower.followingCount, 0) - 1 END,
-                    followee.followersCount = CASE WHEN COALESCE(followee.followersCount, 0) - 1 < 0 THEN 0 ELSE COALESCE(followee.followersCount, 0) - 1 END
-                RETURN follower.username AS follower, followee.username AS followee
-                """,
+                query,
                 follower_username=follower_username,
-                followee_username=followee_username,
+                followee_username=followee_username
             )
-            record = result.single()
-            return record is not None
+            # The result will be empty if the relationship didn't exist/wasn't deleted.
+            return bool(result.single())
 
     def get_followers_for_user(self, username: str, skip: int = 0, limit: int = 100) -> list:
         """Return list of follower user dicts for `username`, with pagination."""

@@ -11,7 +11,7 @@ class UserService:
     def __init__(self, repository: UserRepository):
         self.repo = repository
 
-    def register(self, username: str, email: str, name: str, password: str) -> Optional[User]:
+    def register(self, username: str, email: str, bio: str, name: str, password: str) -> Optional[User]:
         # perform minimal business logic: hash password, create userId
         user_id = str(uuid.uuid4())
         password_hash = hash_password(password)
@@ -19,6 +19,7 @@ class UserService:
             userId=user_id,
             username=username,
             email=email,
+            bio=bio,
             name=name,
             passwordHash=password_hash,
         )
@@ -35,7 +36,7 @@ class UserService:
             return user
         return None
     
-    def update_profile(self, user_id: str, name: Optional[str] = None, email: Optional[str] = None, new_password: Optional[str] = None) -> Optional[User]:
+    def update_profile(self, user_id: str, name: Optional[str] = None, email: Optional[str] = None, new_password: Optional[str] = None, bio: Optional[str] = None) -> Optional[User]:
         password_hash = None
         if new_password:
             password_hash = hash_password(new_password)
@@ -43,7 +44,8 @@ class UserService:
         updated_user = self.repo.update(
             user_id, 
             name=name, 
-            email=email, 
+            email=email,
+            bio=bio,
             password_hash=password_hash
         )
         

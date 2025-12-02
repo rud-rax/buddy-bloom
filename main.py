@@ -15,6 +15,7 @@ def display_profile(user: User):
     print(f"  Username: {user.username}")
     print(f"  Name: {user.name}")
     print(f"  Email: {user.email}")
+    print(f"  Bio: {user.bio}")
     # Display computed/relationship counts (initial values from model if not fetched)
     print(f"  Followers: {user.followersCount}")
     print(f"  Following: {user.followingCount}")
@@ -27,6 +28,9 @@ def edit_profile_flow(service: UserService, current_user: User) -> Optional[User
     
     print(f"Current Email: {current_user.email}")
     new_email = input("Enter new Email (or press Enter to keep current): ").strip()
+
+    print(f"Current Bio: {current_user.bio}")
+    new_bio = input("Enter new Bio (or press Enter to keep current): ").strip()
 
     print("\n--- Change Password ---")
     new_password = getpass.getpass("Enter new Password (or press Enter to keep current): ")
@@ -41,9 +45,10 @@ def edit_profile_flow(service: UserService, current_user: User) -> Optional[User
             password_to_update = new_password
 
     name_to_update = new_name if new_name else None
+    bio_to_update = new_bio if new_bio else None
     email_to_update = new_email if new_email else None
     
-    if not name_to_update and not email_to_update and not password_to_update:
+    if not name_to_update and not email_to_update and not bio_to_update and not password_to_update:
         print("No changes specified.")
         return current_user
 
@@ -52,7 +57,8 @@ def edit_profile_flow(service: UserService, current_user: User) -> Optional[User
             current_user.userId, 
             name=name_to_update, 
             email=email_to_update, 
-            new_password=password_to_update
+            new_password=password_to_update,
+            bio=bio_to_update
         )
         
         if updated_user:
@@ -173,15 +179,16 @@ def main():
             username = input("Choose username: ").strip()
             email = input("Email: ").strip()
             name = input("Full name: ").strip()
-            if not username or not email or not name:
-                print("username, email and name are required")
+            bio = input("Bio: ").strip()
+            if not username or not email or not name or not bio:
+                print("username, email, name and bio are required")
                 continue
             password = getpass.getpass("Choose password: ")
             confirm = getpass.getpass("Confirm password: ")
             if password != confirm:
                 print("Passwords do not match.")
                 continue
-            created = service.register(username, email, name, password)
+            created = service.register(username, email, bio, name, password)
             if created:
                 print(f"User created: {created.username} (userId={created.userId})")
             else:
