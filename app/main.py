@@ -3,10 +3,10 @@ import uuid
 import getpass
 from typing import Optional
 
-from app.database import UserCRUD, NEO4J_URI, NEO4J_USERNAME, NEO4J_PASSWORD
-from app.services.user_service import UserService
-from app.repository.user_repository import UserRepository
-from app.models import User
+from database import UserCRUD, NEO4J_URI, NEO4J_USERNAME, NEO4J_PASSWORD
+from services.user_service import UserService
+from repository.user_repository import UserRepository
+from models import User
 
 def display_profile(user: User):
     """Displays the user's profile information."""
@@ -82,7 +82,10 @@ def logged_in_menu(service: UserService, current_user: User):
         print("4) Unfollow User")
         print("5) View Followers")
         print("6) View Following")
-        print("7) Logout")
+        print("7) View Mutual Connections")
+        print("8) Friend Recommendations")
+        print("9) Search Users")
+        print("10) Logout")
         choice = input("Choose an option: ").strip()
 
         if choice == "1":
@@ -139,11 +142,46 @@ def logged_in_menu(service: UserService, current_user: User):
                     print("-----------------")
 
         elif choice == "7":
+            target = input("See mutuals with (username): ").strip()
+            if not target:
+                print("Username required.")
+            else:
+                mutuals, msg = service.get_mutuals(current_user, target)
+                print(f"\n--- {msg} ---")
+                for u in mutuals:
+                    print(f"  * {u.username} ({u.name})")
+                print("-------------------------")
+
+        elif choice == "8":
+            recs = service.get_recommendations(current_user)
+            print(f"\n--- Recommended for you ---")
+            if not recs:
+                print("No recommendations available (try following more people!).")
+            else:
+                for u in recs:
+                    print(f"  * {u.username} ({u.name})")
+            print("---------------------------")
+
+        elif choice == "9":
+            term = input("Search term (name or username): ").strip()
+            if not term:
+                print("Please enter a search term.")
+            else:
+                results = service.search_users(term)
+                print(f"\n--- Search Results for '{term}' ---")
+                if not results:
+                    print("No users found.")
+                else:
+                    for u in results:
+                        print(f"  * {u.username} (Name: {u.name})")
+                print("-----------------------------------")
+
+        elif choice == "10":
             print("Logged out successfully.")
             return None # Signal to the main function to return to the pre-login menu
 
         else:
-            print("Invalid choice. Please select 1-7.")
+            print("Invalid choice. Please select 1-9.")
             
         # Ensure the menu uses the potentially updated current_user for the next iteration
         if current_user is None:

@@ -213,6 +213,40 @@ class UserCRUD:
                 limit=limit,
             )
             return [r.data() for r in result]
+        
+    def get_mutual_connections(self, username1: str, username2: str):
+        """Find users followed by BOTH username1 and username2."""
+        with self.driver.session() as session:
+            query = """
+            MATCH (u1:User {username: $u1})-[:FOLLOWS]->(mutual:User)<-[:FOLLOWS]-(u2:User {username: $u2})
+            RETURN mutual.userId AS userId, mutual.username AS username, mutual.name AS name, 
+                   mutual.email AS email, mutual.bio AS bio,
+                   mutual.followersCount AS followersCount, mutual.followingCount AS followingCount
+            """
+            result = session.run(query, u1=username1, u2=username2)
+            return [r.data() for r in result]
+        
+    def get_friend_recommendations(self, username: str):
+        """Recommend users that 'username's friends follow."""
+        with self.driver.session() as session:
+            # Logic:
+            # 1. Start at 'u' (Me)
+            # 2. Hop to 'friend' (People I follow)
+            # 3. Hop to 'fof' (People they follow)
+            # 4. WHERE clause: Ensure I don't already follow 'fof' AND 'fof' isn't me.
+            # 5. RETURN 'fof' and count how many 'friend' nodes connect us (strength).
+            query = """
+            MATCH (u:User {username: $username})-[:FOLLOWS]->(friend)-[:FOLLOWS]->(fof:User)
+            WHERE NOT (u)-[:FOLLOWS]->(fof) AND u <> fof
+            RETURN fof.userId AS userId, fof.username AS username, fof.name AS name, 
+                   fof.email AS email, fof.bio AS bio,
+                   fof.followersCount AS followersCount, fof.followingCount AS followingCount,
+                   count(friend) as strength
+            ORDER BY strength DESC
+            LIMIT 5
+            """
+            result = session.run(query, username=username)
+            return [r.data() for r in result]
 
 
 if __name__ == "__main__":
