@@ -79,3 +79,13 @@ class UserRepository:
     def get_recommendations(self, username: str) -> list[User]:
         raw = self.crud.get_friend_recommendations(username)
         return [self._to_model(r) for r in raw]
+    
+    def search(self, query_term: str) -> list[User]:
+        """Search for users matching the query term."""
+        raw = self.crud.search_users(query_term)
+        return [self._to_model(r) for r in raw]
+    
+    def get_popular(self) -> list[User]:
+        """Fetch popular users from the DB and convert to models."""
+        raw = self.crud.get_popular_users()
+        return [self._to_model(r) for r in raw]

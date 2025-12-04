@@ -44,8 +44,17 @@ class UserCRUD:
             result = session.run(
                 """
                 MERGE (u:User {username: $username})
-                ON CREATE SET u.userId = $userId, u.passwordHash = $passwordHash, u.name = $name, u.email = $email, u.bio = $bio
-                RETURN u.userId AS userId, u.username AS username, u.passwordHash AS passwordHash, u.name AS name, u.email AS email, u.bio = $bio
+                ON CREATE SET 
+                    u.userId = $userId, 
+                    u.passwordHash = $passwordHash, 
+                    u.name = $name, 
+                    u.email = $email, 
+                    u.bio = $bio,
+                    u.followersCount = 0,
+                    u.followingCount = 0
+                RETURN u.userId AS userId, u.username AS username, u.passwordHash AS passwordHash, 
+                       u.name AS name, u.email AS email, u.bio AS bio,
+                       u.followersCount AS followersCount, u.followingCount AS followingCount
                 """,
                 userId=user_id,
                 username=username,
@@ -246,6 +255,35 @@ class UserCRUD:
             LIMIT 5
             """
             result = session.run(query, username=username)
+            return [r.data() for r in result]
+        
+    def search_users(self, query_term: str):
+        """Search users by name or username (case-insensitive partial match)."""
+        with self.driver.session() as session:
+            query = """
+            MATCH (u:User)
+            WHERE toLower(u.username) CONTAINS toLower($term) 
+               OR toLower(u.name) CONTAINS toLower($term)
+            RETURN u.userId AS userId, u.username AS username, u.name AS name, 
+                   u.email AS email, u.bio AS bio,
+                   u.followersCount AS followersCount, u.followingCount AS followingCount
+            LIMIT 20
+            """
+            result = session.run(query, term=query_term)
+            return [r.data() for r in result]
+        
+    def get_popular_users(self):
+        """Return top 10 users with the highest follower counts."""
+        with self.driver.session() as session:
+            query = """
+            MATCH (u:User)
+            RETURN u.userId AS userId, u.username AS username, u.name AS name, 
+                   u.email AS email, u.bio AS bio,
+                   u.followersCount AS followersCount, u.followingCount AS followingCount
+            ORDER BY u.followersCount DESC
+            LIMIT 10
+            """
+            result = session.run(query)
             return [r.data() for r in result]
 
 
