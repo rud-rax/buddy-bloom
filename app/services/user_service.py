@@ -1,8 +1,8 @@
 from typing import Optional
 import uuid
-from app.repository.user_repository import UserRepository
-from app.models import User
-from app.utils.string import hash_password, check_password
+from repository.user_repository import UserRepository
+from models import User
+from utils.string import hash_password, check_password
 
 
 class UserService:

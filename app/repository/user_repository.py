@@ -1,6 +1,6 @@
 from typing import Optional
-from app.database import UserCRUD
-from app.models import User
+from database import UserCRUD
+from models import User
 
 
 class UserRepository:

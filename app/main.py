@@ -3,10 +3,10 @@ import uuid
 import getpass
 from typing import Optional
 
-from app.database import UserCRUD, NEO4J_URI, NEO4J_USERNAME, NEO4J_PASSWORD
-from app.services.user_service import UserService
-from app.repository.user_repository import UserRepository
-from app.models import User
+from database import UserCRUD, NEO4J_URI, NEO4J_USERNAME, NEO4J_PASSWORD
+from services.user_service import UserService
+from repository.user_repository import UserRepository
+from models import User
 
 def display_profile(user: User):
     """Displays the user's profile information."""
@@ -84,7 +84,8 @@ def logged_in_menu(service: UserService, current_user: User):
         print("6) View Following")
         print("7) View Mutual Connections")
         print("8) Friend Recommendations")
-        print("9) Logout")
+        print("9) Search Users")
+        print("10) Logout")
         choice = input("Choose an option: ").strip()
 
         if choice == "1":
@@ -162,6 +163,20 @@ def logged_in_menu(service: UserService, current_user: User):
             print("---------------------------")
 
         elif choice == "9":
+            term = input("Search term (name or username): ").strip()
+            if not term:
+                print("Please enter a search term.")
+            else:
+                results = service.search_users(term)
+                print(f"\n--- Search Results for '{term}' ---")
+                if not results:
+                    print("No users found.")
+                else:
+                    for u in results:
+                        print(f"  * {u.username} (Name: {u.name})")
+                print("-----------------------------------")
+
+        elif choice == "10":
             print("Logged out successfully.")
             return None # Signal to the main function to return to the pre-login menu
 
