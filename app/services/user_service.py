@@ -124,3 +124,14 @@ class UserService:
         if ok:
             return True, f"You have unfollowed {target_username}."
         return False, "Unfollow operation failed or you were not following the user."
+    
+    def get_mutuals(self, current_user: User, target_username: str) -> tuple[list[User], str]:
+        if not current_user:
+            return [], "Authentication required."
+        
+        target = self.repo.get_by_username(target_username)
+        if not target:
+            return [], "Target user not found."
+
+        mutuals = self.repo.get_mutuals(current_user.username, target_username)
+        return mutuals, f"Found {len(mutuals)} mutual connections."

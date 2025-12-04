@@ -213,6 +213,18 @@ class UserCRUD:
                 limit=limit,
             )
             return [r.data() for r in result]
+        
+    def get_mutual_connections(self, username1: str, username2: str):
+        """Find users followed by BOTH username1 and username2."""
+        with self.driver.session() as session:
+            query = """
+            MATCH (u1:User {username: $u1})-[:FOLLOWS]->(mutual:User)<-[:FOLLOWS]-(u2:User {username: $u2})
+            RETURN mutual.userId AS userId, mutual.username AS username, mutual.name AS name, 
+                   mutual.email AS email, mutual.bio AS bio,
+                   mutual.followersCount AS followersCount, mutual.followingCount AS followingCount
+            """
+            result = session.run(query, u1=username1, u2=username2)
+            return [r.data() for r in result]
 
 
 if __name__ == "__main__":

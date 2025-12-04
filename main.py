@@ -82,7 +82,8 @@ def logged_in_menu(service: UserService, current_user: User):
         print("4) Unfollow User")
         print("5) View Followers")
         print("6) View Following")
-        print("7) Logout")
+        print("7) View Mutual Connections")
+        print("8) Logout")
         choice = input("Choose an option: ").strip()
 
         if choice == "1":
@@ -139,6 +140,17 @@ def logged_in_menu(service: UserService, current_user: User):
                     print("-----------------")
 
         elif choice == "7":
+            target = input("See mutuals with (username): ").strip()
+            if not target:
+                print("Username required.")
+            else:
+                mutuals, msg = service.get_mutuals(current_user, target)
+                print(f"\n--- {msg} ---")
+                for u in mutuals:
+                    print(f"  * {u.username} ({u.name})")
+                print("-------------------------")
+
+        elif choice == "8":
             print("Logged out successfully.")
             return None # Signal to the main function to return to the pre-login menu
 

@@ -71,3 +71,7 @@ class UserRepository:
         """Return list of `User` models representing users whom `username` follows."""
         raw = self.crud.get_following_for_user(username, skip=skip, limit=limit)
         return [self._to_model(r) for r in raw] if raw else []
+    
+    def get_mutuals(self, username1: str, username2: str) -> list[User]:
+        raw = self.crud.get_mutual_connections(username1, username2)
+        return [self._to_model(r) for r in raw]
