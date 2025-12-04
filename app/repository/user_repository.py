@@ -75,3 +75,7 @@ class UserRepository:
     def get_mutuals(self, username1: str, username2: str) -> list[User]:
         raw = self.crud.get_mutual_connections(username1, username2)
         return [self._to_model(r) for r in raw]
+    
+    def get_recommendations(self, username: str) -> list[User]:
+        raw = self.crud.get_friend_recommendations(username)
+        return [self._to_model(r) for r in raw]

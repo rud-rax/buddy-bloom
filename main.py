@@ -83,7 +83,8 @@ def logged_in_menu(service: UserService, current_user: User):
         print("5) View Followers")
         print("6) View Following")
         print("7) View Mutual Connections")
-        print("8) Logout")
+        print("8) Friend Recommendations")
+        print("9) Logout")
         choice = input("Choose an option: ").strip()
 
         if choice == "1":
@@ -151,11 +152,21 @@ def logged_in_menu(service: UserService, current_user: User):
                 print("-------------------------")
 
         elif choice == "8":
+            recs = service.get_recommendations(current_user)
+            print(f"\n--- Recommended for you ---")
+            if not recs:
+                print("No recommendations available (try following more people!).")
+            else:
+                for u in recs:
+                    print(f"  * {u.username} ({u.name})")
+            print("---------------------------")
+
+        elif choice == "9":
             print("Logged out successfully.")
             return None # Signal to the main function to return to the pre-login menu
 
         else:
-            print("Invalid choice. Please select 1-7.")
+            print("Invalid choice. Please select 1-9.")
             
         # Ensure the menu uses the potentially updated current_user for the next iteration
         if current_user is None:

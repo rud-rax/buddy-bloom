@@ -135,3 +135,8 @@ class UserService:
 
         mutuals = self.repo.get_mutuals(current_user.username, target_username)
         return mutuals, f"Found {len(mutuals)} mutual connections."
+    
+    def get_recommendations(self, current_user: User) -> list[User]:
+        if not current_user:
+            return []
+        return self.repo.get_recommendations(current_user.username)
