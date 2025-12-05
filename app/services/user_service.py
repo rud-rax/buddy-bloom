@@ -140,3 +140,11 @@ class UserService:
         if not current_user:
             return []
         return self.repo.get_recommendations(current_user.username)
+    
+    def search_users(self, term: str) -> list[User]:
+        if not term:
+            return []
+        return self.repo.search(term)
+    
+    def get_popular_users(self) -> list[User]:
+        return self.repo.get_popular()
