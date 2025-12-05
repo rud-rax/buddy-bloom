@@ -50,8 +50,8 @@ class UserCRUD:
                     u.name = $name, 
                     u.email = $email, 
                     u.bio = $bio,
-                    u.followersCount = 0,   // <--- ADD THIS
-                    u.followingCount = 0    // <--- ADD THIS
+                    u.followersCount = 0,
+                    u.followingCount = 0
                 RETURN u.userId AS userId, u.username AS username, u.passwordHash AS passwordHash, 
                        u.name AS name, u.email AS email, u.bio AS bio,
                        u.followersCount AS followersCount, u.followingCount AS followingCount
